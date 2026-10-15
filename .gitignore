@@ -1,0 +1,12 @@
+target/
+.tools/
+.env
+private-medical-documents/
+*.log
+.DS_Store
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.idea/
+.vscode/
