@@ -24,5 +24,6 @@ public final class AuthService {
   try{return users.create(name.strip(),email.strip().toLowerCase(Locale.ROOT),BCrypt.hashpw(password,BCrypt.gensalt(12)),role,specialty,fee,actor);}
   catch(SQLIntegrityConstraintViolationException e){throw new AppException(409,"An account with that email already exists.");}
  }
+ public static void validateConfirmation(String password,String confirmation){if(password==null||!password.equals(confirmation))throw new AppException(400,"Passwords do not match. Please enter the same password twice.");}
  public static void validatePassword(String password){if(password==null||password.length()<10||password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length>72)throw new AppException(400,"Use at least 10 characters and at most 72 UTF-8 bytes for your password.");}
 }

@@ -4,11 +4,11 @@
 
 Run `mvn test` or `mvn clean package`. Isolated H2 databases in MySQL compatibility mode exercise real JDBC transactions. Only H2's unsupported STORED generated-column keyword is removed in test fixtures. Test databases never use real records. Tests run sequentially across fixtures because Database is a shared static pool; explicit concurrency tests use separate connections and synchronized starts.
 
-Verified in this workspace on October 16, 2026 (Asia/Kolkata): **46 tests, 0 failures, 0 errors, 0 skipped**, and WAR packaging succeeded. JDK 27 compiled with `--release 21`, Maven 3.9.9.
+Baseline before the Java upgrade: **46 tests, 0 failures, 0 errors, 0 skipped**, with JDK 27 compiling using `--release 21`. Revalidated in this workspace on October 20, 2026 (Asia/Kolkata): **46 tests, 0 failures, 0 errors, 0 skipped**, and WAR packaging succeeded with JDK 27 compiling using `--release 25` and Maven 3.9.9.
 
 | Class | Tests | Main behavior |
 |---|---:|---|
-| AuthServiceTest | 4 | BCrypt, forced patient role, active-account login, throttle, roles |
+| AuthServiceTest | 5 | BCrypt, forced patient role, active-account login, throttle, roles, password confirmation |
 | SecurityFilterTest | 7 | CSRF, anonymous denial, public assets, credential revision and inactive-session revocation |
 | PasswordResetServiceTest | 5 | One-use/expiry/roles, hashed tokens, transaction rollback |
 | AppointmentServiceTest | 4 | State transitions and domain validation |
@@ -20,7 +20,9 @@ Verified in this workspace on October 16, 2026 (Asia/Kolkata): **46 tests, 0 fai
 | ReminderServiceTest | 2 | Reminder eligibility and controlled retry boundaries |
 | BookingCleanupServiceTest | 1 | Only expired ACTIVE holds change; audit dedup and record retention |
 
-Reports are generated under `target/surefire-reports/`. JDK 27 emits dependency native-access/deprecation warnings; these are not test failures. Production recommends the requested JDK 21 LTS.
+Reports are generated under `target/surefire-reports/`. JDK 27 emits dependency native-access/deprecation warnings; these are not test failures. Production requires Java 25 LTS or newer.
+
+Latest presentation refinement, October 21, 2026: **47 tests, 0 failures, 0 errors, 0 skipped** and successful WAR packaging. Password confirmation now has server-side validation. All 12 HTTP workflow groups passed again against a fresh fictional MySQL database.
 
 ## Real deployment checks
 
@@ -57,4 +59,4 @@ Windows classpath uses `;` instead of `:`. This helper creates a fictional same-
 
 H2 integration tests complement, rather than replace, the real MySQL smoke run. External SMTP delivery, automated scanned-image OCR, production reverse-proxy/TLS infrastructure, production backup restoration, and multi-node load/stress were not tested. No test used real patient data or sent real email.
 
-Browser visual QA was attempted but unavailable: in-app browser connection failed and native Chrome reported missing Computer Use permissions. No rendered-layout screenshot or interactive browser click verification is claimed. JS syntax was checked separately; HTTP tests exercised the backend behind the UI.
+Separate headless Chrome browser checks passed for patient, doctor and admin navigation, appointment review/confirmation, severity updates, consultation draft persistence and completion. A 390px patient viewport was checked for page overflow. No uncaught JavaScript errors were observed. Rendered fallback screenshots are in `docs/screenshots/`; these checks do not replace cross-browser or accessibility audits.

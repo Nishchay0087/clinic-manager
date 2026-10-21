@@ -4,7 +4,7 @@ A Java Servlet/JSP clinic application with patient, doctor, and administrator po
 
 ## Run the existing local demo
 
-The development environment prepared in this workspace uses Tomcat at **http://localhost:8080/clinic-manager/** and an isolated MySQL instance on **127.0.0.1:3307**. These are local processes, not a public deployment. If they have stopped, use `scripts/start-demo.sh` (macOS Apple Silicon, downloaded `.tools` required). Use `scripts/stop-demo.sh` to stop only these project processes.
+The development environment prepared in this workspace uses Tomcat at **http://localhost:8081/clinic-manager/** and an isolated MySQL instance on **127.0.0.1:3307**. These are local processes, not a public deployment. If they have stopped, use `scripts/start-demo.sh` (macOS Apple Silicon, downloaded `.tools` required). Use `scripts/stop-demo.sh` to stop only these project processes.
 
 | Role | Email | Password (development only) |
 |---|---|---|
@@ -16,7 +16,7 @@ All seeded names and records are fictional. Never import the demo seed in produc
 
 ## Fresh installation
 
-Use **Java 21 LTS**, **Maven 3.9.9+**, **Tomcat 10.1**, and **MySQL 8.4 LTS**. The project compiles to Java 21 bytecode. This workspace was verified with installed JDK 27, Maven 3.9.9, Tomcat 10.1.39, and MySQL 8.4.11. Prefer a current patched Tomcat 10.1 build for deployment; it is installed separately from the WAR.
+Use **Java 25 LTS**, **Maven 3.9.9+**, **Tomcat 10.1**, and **MySQL 8.4 LTS**. The project compiles to Java 25 bytecode and requires a Java 25+ runtime. This workspace was verified with JDK 27, Maven 3.9.9, Tomcat 10.1.39, and MySQL 8.4.11. Prefer a current patched Tomcat 10.1 build for deployment; it is installed separately from the WAR.
 
 1. Create a MySQL database and restricted application user.
 2. Import `database/schema.sql`. Optionally import `database/seed-demo.sql` for development.
@@ -52,3 +52,7 @@ Architecture and OOP: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Routes: [doc
 - Document archival preserves stored files. A clinic-specific legal retention/deletion policy and production backup/restore operations must be configured by the deployment owner.
 - Administrative reset links are shown once for direct, trusted handoff to the account holder; there is no unauthenticated email-based forgot-password delivery flow.
 - This is a functional college project, not a certification of clinical, privacy, or regulatory compliance.
+
+## Presenting the project
+
+See [docs/PRESENTATION.md](docs/PRESENTATION.md) for an eight-minute live-demo sequence, speaking notes, architecture explanation, Java/OOP examples, and viva answers. On this provisioned laptop, `./scripts/prepare-presentation.sh` prepares a new fictional database for the current clinic date without deleting previous data; append a YYYY-MM-DD date to prepare a future presentation.

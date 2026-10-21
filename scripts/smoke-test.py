@@ -30,7 +30,7 @@ patient=Client();patient.login('patient@clinic.demo');doctor=Client();doctor.log
 for c in (patient,doctor,admin):assert c.request('/api/dashboard')['metrics']
 patient.request('/api/users',expect=403);doctor.request('/api/settings',expect=403);
 patient.request('/api/profile',b'{}',headers={'Content-Type':'application/json'},expect=403);ok('Three role logins, database dashboards, RBAC and CSRF')
-new=Client();new.token('/register');email='smoke-'+uuid.uuid4().hex[:10]+'@example.test';new.request('/register',{'csrf':new.csrf,'name':'Fictional Smoke Patient','email':email,'password':PASS,'role':'ADMIN'},form=True);new.token('/app');assert new.request('/api/me')['role']=='PATIENT';ok('Registration cannot elevate role')
+new=Client();new.token('/register');email='smoke-'+uuid.uuid4().hex[:10]+'@example.test';new.request('/register',{'csrf':new.csrf,'name':'Fictional Smoke Patient','email':email,'password':PASS,'confirmPassword':PASS,'role':'ADMIN'},form=True);new.token('/app');assert new.request('/api/me')['role']=='PATIENT';ok('Registration cannot elevate role')
 date=(TODAY+datetime.timedelta(days=2)).isoformat();slots=patient.request('/api/slots?doctorId=1&date='+date);assert len(slots)>2
 body={'doctorId':1,'date':date,'startTime':slots[0],'reason':'Fictional smoke test'}
 def race(c):
@@ -57,6 +57,7 @@ new.request('/api/documents/'+str(did)+'/archive',{});new.request('/api/document
 queue=doctor.request('/api/queue');assert queue
 # Complete one currently checked-in fictional seeded visit.
 visits=doctor.request('/api/appointments?date='+TODAY.isoformat());visit=next((v for v in visits if v['status']=='CHECKED_IN'),None)
+assert visit, 'No checked-in visit today: prepare a fresh demo for the clinic date before this test'
 if visit:
     doctor.request('/api/queue',{'appointmentId':visit['id'],'severity':'URGENT','reason':'Fictional smoke assessment'})
     doctor.request('/api/appointments/'+str(visit['id'])+'/status',{'status':'IN_PROGRESS'})

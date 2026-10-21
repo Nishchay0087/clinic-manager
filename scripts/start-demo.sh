@@ -8,9 +8,14 @@ MYSQL_HOME="$PWD/.tools/mysql-8.4.11-macos15-arm64"
 if ! "$MYSQL_HOME/bin/mysqladmin" --no-defaults --socket="$PWD/.tools/mysql.sock" -uroot ping >/dev/null 2>&1; then
  "$MYSQL_HOME/bin/mysqld" --no-defaults --basedir="$MYSQL_HOME" --datadir="$PWD/.tools/mysql-local" --bind-address=127.0.0.1 --port=3307 --socket="$PWD/.tools/mysql.sock" --mysqlx=OFF --pid-file="$PWD/.tools/mysql.pid" --log-error="$PWD/.tools/mysql.log" --default-time-zone='+05:30' --daemonize
 fi
-if curl --fail --silent "$APP_BASE_URL/login" >/dev/null; then echo "Clinic is already running: $APP_BASE_URL/"; exit 0; fi
 "$PWD/.tools/apache-maven-3.9.9/bin/mvn" -Dmaven.repo.local=.tools/m2 -q package
 cp target/clinic-manager.war "$CATALINA_HOME/webapps/clinic-manager.war"
+if curl --fail --silent "$APP_BASE_URL/login" >/dev/null; then echo "Updated WAR deployed to the running clinic: $APP_BASE_URL/"; exit 0; fi
 export CATALINA_PID="$PWD/.tools/tomcat.pid"
 "$CATALINA_HOME/bin/catalina.sh" start
-echo "Clinic starting at $APP_BASE_URL/"
+for attempt in {1..40}; do
+ if curl --fail --silent "$APP_BASE_URL/login" >/dev/null; then echo "Clinic ready: $APP_BASE_URL/"; exit 0; fi
+ sleep 1
+done
+echo "Tomcat has not become ready. Check .tools/apache-tomcat-10.1.39/logs/catalina.out" >&2
+exit 1

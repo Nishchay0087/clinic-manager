@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Install JDK 21 LTS (or compatible newer JDK), Maven 3.9.9+, MySQL 8.4, and Apache Tomcat 10.1. No Node or frontend build tool is needed. Chart.js 4.4.7 is vendored locally. Maven pins the servlet, JSTL, JDBC driver, DBCP2, PDFBox, BCrypt, Jackson, Jakarta Mail and test versions in `pom.xml`.
+Install JDK 25 LTS (or compatible newer JDK), Maven 3.9.9+, MySQL 8.4, and Apache Tomcat 10.1. The built WAR requires a Java 25+ runtime. No Node or frontend build tool is needed. Chart.js 4.4.7 is vendored locally. Maven pins the servlet, JSTL, JDBC driver, DBCP2, PDFBox, BCrypt, Jackson, Jakarta Mail and test versions in `pom.xml`.
 
 Verify `java -version`, `mvn -version`, and `mysql --version`. Tomcat 9 is incompatible: the application uses `jakarta.servlet`, not `javax.servlet`. Use patched dependency and Tomcat releases when deploying beyond the demo, after testing compatibility.
 
@@ -57,7 +57,7 @@ Create doctors/patients through the portal thereafter. Public registration alway
 Copy `.env.example` to `.env`; edit the placeholders. The shell helper sources this file (treat it as trusted shell configuration). For paths with spaces use shell quotes. Alternatively export variables directly:
 
 ```sh
-export JAVA_HOME=/path/to/jdk-21
+export JAVA_HOME=/path/to/jdk-25
 export CATALINA_HOME=/path/to/apache-tomcat-10.1
 export DB_URL='jdbc:mysql://localhost:3306/clinic_manager?serverTimezone=Asia/Kolkata'
 export DB_USERNAME=clinic_app
@@ -74,7 +74,7 @@ This runs all Maven tests, builds, copies the WAR, and starts Tomcat in the fore
 ## Configuration and launch: Windows PowerShell
 
 ```powershell
-$env:JAVA_HOME='C:\Program Files\Java\jdk-21'
+$env:JAVA_HOME='C:\Program Files\Java\jdk-25'
 $env:CATALINA_HOME='C:\tools\apache-tomcat-10.1'
 $env:DB_URL='jdbc:mysql://localhost:3306/clinic_manager?serverTimezone=Asia/Kolkata'
 $env:DB_USERNAME='clinic_app'
