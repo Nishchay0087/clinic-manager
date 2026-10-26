@@ -17,7 +17,7 @@ public class DesktopUiSmoke extends Application {
     private ClinicApp app;private Stage stage;
     public static void main(String[] args){launch(args);}
     @Override public void start(Stage stage)throws Exception{
-        this.stage=stage;app=new ClinicApp();app.start(stage);
+        System.setProperty("clinic.preferences.node","com/clinic/desktop-ui-test");this.stage=stage;app=new ClinicApp();app.start(stage);
         Thread thread=new Thread(()->{try{exercise();System.out.println("PASS native JavaFX controls: admin creates doctor, doctor sets availability, patient registers and books; all role pages render.");fx(()->{app.stop();Platform.exit();return null;});}catch(Throwable e){e.printStackTrace();try{snapshot("failure");}catch(Exception ignored){}System.exit(1);}},"native-ui-smoke");thread.setDaemon(true);thread.start();
     }
     private <T>T fx(Callable<T> task)throws Exception{var future=new CompletableFuture<T>();Platform.runLater(()->{try{future.complete(task.call());}catch(Throwable e){future.completeExceptionally(e);}});return future.get(10,TimeUnit.SECONDS);}

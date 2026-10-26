@@ -24,7 +24,7 @@ public final class ClinicApp extends Application {
     private final BorderPane shell=new BorderPane();
     private final Label status=new Label("Connect to your clinic server to begin.");
     private final ExecutorService worker=Executors.newSingleThreadExecutor(r->{var t=new Thread(r,"clinic-http");t.setDaemon(true);return t;});
-    private final Preferences preferences=Preferences.userNodeForPackage(ClinicApp.class);
+    private final Preferences preferences=Preferences.userRoot().node(System.getProperty("clinic.preferences.node","com/clinic/desktop"));
     private ClinicClient client;
     private JsonNode user;
     private VBox content;
@@ -48,13 +48,16 @@ public final class ClinicApp extends Application {
         shell.setDisable(true);status.setText(message);
         worker.submit(()->{try{T result=work.run();Platform.runLater(()->{shell.setDisable(false);status.setText("Connected • "+(client==null?"":client.server()));try{done.accept(result);}catch(Exception e){error(e);}});}catch(Exception e){Platform.runLater(()->{shell.setDisable(false);error(e);});}});
     }
-    private void error(Exception e){status.setText("Action could not be completed.");var a=new Alert(Alert.AlertType.ERROR,e.getMessage()==null?"Check the server connection and try again.":e.getMessage(),ButtonType.OK);a.initOwner(stage);a.setHeaderText("Please check and try again");a.showAndWait();}
+    private void error(Exception e){status.setText("Action could not be completed.");if(e instanceof java.net.ConnectException){String server=client==null?"the configured server":client.server();var warning=new Alert(Alert.AlertType.ERROR,"Cannot reach "+server+"\n\nFor this Mac, open another terminal in the project folder and run:\n./scripts/start-clinic.sh\n\nLeave that terminal open, then use this Server URL:\nhttp://localhost:8083/clinic-manager\n\nFor a remote clinic, check its server URL and network connection.",ButtonType.OK);warning.initOwner(stage);warning.setHeaderText("The clinic backend is not running or the address is incorrect");warning.showAndWait();return;}var a=new Alert(Alert.AlertType.ERROR,e.getMessage()==null?"Check the server connection and try again.":e.getMessage(),ButtonType.OK);a.initOwner(stage);a.setHeaderText("Please check and try again");a.showAndWait();}
     private void message(String title,String body){var a=new Alert(Alert.AlertType.INFORMATION,body,ButtonType.OK);a.initOwner(stage);a.setHeaderText(title);a.showAndWait();}
     private void confirm(String title,Runnable accepted){var a=new Alert(Alert.AlertType.CONFIRMATION,title,ButtonType.CANCEL,ButtonType.OK);a.initOwner(stage);a.setHeaderText("Confirm action");if(a.showAndWait().orElse(ButtonType.CANCEL)==ButtonType.OK)accepted.run();}
     private void mutate(String route,Object values){load("Saving changes…",()->client.post(route,values),r->refresh.run());}
     private void login(boolean registration){
         shell.setLeft(null);user=null;role=null;
-        var f=new Form();String url=System.getenv().getOrDefault("CLINIC_SERVER_URL",preferences.get("server","http://localhost:8081/clinic-manager"));
+        var f=new Form();
+        // Remove the address accidentally persisted by the original UI smoke test.
+        if(preferences.get("server","").matches("http://localhost:8082/clinic-manager/?"))preferences.remove("server");
+        String url=System.getenv().getOrDefault("CLINIC_SERVER_URL",preferences.get("server","http://localhost:8083/clinic-manager"));
         f.input("Server URL","server",url);if(registration)f.input("Full name","name","");f.input("Email address","email","");f.password("Password","password");if(registration)f.password("Confirm password","confirmPassword");
         var box=new VBox(18,label("+  e-healthcare","brand"),label(registration?"Create a patient account":"Welcome to your clinic","title"),label("One clinic. Shared records. Patient, doctor and administrator workspaces.","subtitle"),f.box);
         box.getStyleClass().add("card");box.setMaxWidth(500);

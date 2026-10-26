@@ -4,6 +4,10 @@ cd "$(dirname "$0")/.."
 if [[ -z "${CLINIC_SERVER_URL:-}" && -f .tools/clinic.env ]]; then
   export CLINIC_SERVER_URL="$(source .tools/clinic.env; printf '%s' "$APP_BASE_URL")"
 fi
+if [[ -z "${CLINIC_SERVER_URL:-}" && -f .tools/demo.env && ! -f .tools/clinic.env ]]; then
+  export CLINIC_SERVER_URL=http://localhost:8083/clinic-manager
+  echo 'First-time setup: run ./scripts/start-clinic.sh in another terminal and leave it open.'
+fi
 # macOS /usr/bin/java may be only Apple's placeholder, even with Homebrew Java installed.
 use_jdk() {
   local candidate="$1" version major
