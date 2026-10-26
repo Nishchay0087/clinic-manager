@@ -1,5 +1,16 @@
 # Test and verification record
 
+## JavaFX migration — October 26, 2026
+
+The backend suite passes **52 tests**; the separate desktop transport configuration suite passes **1 test**. Both Maven packages compile. A self-contained Mac JavaFX runtime was built with `javafx:jlink`.
+
+`SchemaSetup` was run twice against a new real MySQL 8.4 database: both migrations applied once, the second run was a no-op, and no demo records were inserted. `SetupAdmin` created the first administrator explicitly. `scripts/DesktopSmoke.java` then exercised the real desktop Java HTTP client for registration, admin-created doctor, availability, shared booking, slot conflicts, ownership, triage, consultation draft/completion, MySQL-backed PDF upload/download/archive, CSV, password revocation and logout. All passed.
+
+Native JavaFX scene-graph checks in `scripts/DesktopUiSmoke.java` exercised account creation, doctor availability, patient registration and booking, severity assessment, consultation draft reopening/completion, and screens for all three roles. Screenshots in `docs/screenshots-javafx/` contain only fictional test data. Tokens and PDFs were additionally checked across a real Tomcat restart; native reset and cross-origin authentication rejection were checked.
+
+Cloud deployment has not been executed: no hosted MySQL credentials or Vercel account were supplied. Docker is not installed in this workspace, so the container build has not been run here. Windows/Linux packaging and UI tests remain unverified. Existing browser verification below is historical and separate from JavaFX.
+
+
 ## Automated Java suite
 
 Run `mvn test` or `mvn clean package`. Isolated H2 databases in MySQL compatibility mode exercise real JDBC transactions. Only H2's unsupported STORED generated-column keyword is removed in test fixtures. Test databases never use real records. Tests run sequentially across fixtures because Database is a shared static pool; explicit concurrency tests use separate connections and synchronized starts.

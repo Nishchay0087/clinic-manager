@@ -1,3 +1,5 @@
+> This playbook describes the earlier browser frontend. The current professor-required frontend is JavaFX: use [the JavaFX guide](JAVAFX-DEPLOYMENT.md) for launch and architecture. JDBC, MySQL, priority-queue and business-rule explanations below still apply.
+
 # Presentation playbook — E-Healthcare Clinic Manager
 
 ## Prepare on October 22 before presenting

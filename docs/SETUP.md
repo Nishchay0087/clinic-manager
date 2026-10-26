@@ -1,5 +1,7 @@
 # Setup and operations
 
+For the primary native frontend and a clean production database, follow [JavaFX deployment](JAVAFX-DEPLOYMENT.md). The instructions below retain the legacy web/demo setup.
+
 ## Requirements
 
 Install JDK 25 LTS (or compatible newer JDK), Maven 3.9.9+, MySQL 8.4, and Apache Tomcat 10.1. The built WAR requires a Java 25+ runtime. No Node or frontend build tool is needed. Chart.js 4.4.7 is vendored locally. Maven pins the servlet, JSTL, JDBC driver, DBCP2, PDFBox, BCrypt, Jackson, Jakarta Mail and test versions in `pom.xml`.
@@ -36,7 +38,7 @@ SOURCE C:/path/to/clinic-manager/database/schema.sql;
 SOURCE C:/path/to/clinic-manager/database/seed-demo.sql;
 ```
 
-`database/migrations/V001__initial_schema.sql` is the same initial schema, supplied for versioned migration workflows. Import **either** this file or `schema.sql`, never both. Future schema changes require a new migration; the app does not auto-migrate or seed users on startup. Back up the DB and private file store together.
+`database/schema.sql` is the combined V001 + V002 schema for manual imports. For tracked production migrations, use `SchemaSetup` as documented in the JavaFX deployment guide instead. Do not combine manual schema imports with the migration runner. Future schema changes require a new migration; the app does not auto-migrate or seed users on startup. Back up the DB and private file store together.
 
 For a clean non-demo installation, generate a BCrypt hash with the provided Java tool after packaging:
 

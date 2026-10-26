@@ -7,7 +7,7 @@ public final class ApiServlet extends HttpServlet {
  private final ObjectMapper json=new ObjectMapper();private final PortalService portal=new PortalService();private final AppointmentService appointments=new AppointmentService();private final ConsultationService consultations=new ConsultationService();private final DocumentService documents=new DocumentService();private final TriageService triage=new TriageService();
  @Override protected void service(HttpServletRequest r,HttpServletResponse p)throws IOException{
   p.setContentType("application/json");try{
-   @SuppressWarnings("unchecked") var user=(Map<String,Object>)r.getSession().getAttribute("user");long uid=user==null?0:((Number)user.get("id")).longValue();String role=user==null?"PUBLIC":(String)user.get("role");
+   @SuppressWarnings("unchecked") var user=(Map<String,Object>)r.getAttribute("authenticatedUser");if(user==null&&r.getSession(false)!=null){@SuppressWarnings("unchecked") var cookieUser=(Map<String,Object>)r.getSession(false).getAttribute("user");user=cookieUser;}long uid=user==null?0:((Number)user.get("id")).longValue();String role=user==null?"PUBLIC":(String)user.get("role");
    String route=Objects.toString(r.getPathInfo(),"/");String[] parts=route.split("/");String resource=parts.length>1?parts[1]:"";long id=parts.length>2&&parts[2].matches("[0-9]+")?Long.parseLong(parts[2]):0;String action=parts.length>3?parts[3]:"";
    Map<String,String> f=new HashMap<>();r.getParameterMap().forEach((k,v)->f.put(k,v[0]));boolean get=r.getMethod().equals("GET");if(!get&&!r.getMethod().equals("POST"))throw new AppException(405,"Unsupported method.");
    Map<String,Object>b=Map.of();if(!get&&!Objects.toString(r.getContentType(),"").startsWith("multipart/")){if(r.getContentLengthLong()>65536)throw new AppException(413,"Request is too large.");byte[] bytes=r.getInputStream().readNBytes(65537);if(bytes.length>65536)throw new AppException(413,"Request is too large.");if(bytes.length>0)b=json.readValue(bytes,new com.fasterxml.jackson.core.type.TypeReference<Map<String,Object>>(){});}
@@ -30,7 +30,7 @@ public final class ApiServlet extends HttpServlet {
     case "audit"->{requireGet(get);result=portal.audit(role,f);}
     case "notifications"->{if(get)result=portal.notifications(uid);else portal.readNotifications(uid);}
     case "profile"->{if(get)result=portal.profile(uid);else portal.profile(uid,b);}
-    case "password"->{if(get)throw new AppException(405,"POST required.");portal.password(uid,b);r.changeSessionId();}
+    case "password"->{if(get)throw new AppException(405,"POST required.");portal.password(uid,b);if(r.getSession(false)!=null)r.changeSessionId();}
     default->throw new AppException(404,"Resource not found.");
    }
    json.writeValue(p.getOutputStream(),result);

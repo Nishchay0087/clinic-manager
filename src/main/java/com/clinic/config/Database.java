@@ -11,7 +11,7 @@ public final class Database {
   p.setDriverClassName(p.getUrl().startsWith("jdbc:mysql:")?"com.mysql.cj.jdbc.Driver":"org.h2.Driver");
   p.setUsername(value("DB_USERNAME","clinic_app"));p.setPassword(value("DB_PASSWORD",""));
   if(p.getUrl().startsWith("jdbc:mysql:")){String zone=java.time.ZoneId.of(value("CLINIC_TIMEZONE","Asia/Kolkata")).getRules().getOffset(java.time.Instant.now()).getId();if(zone.equals("Z"))zone="+00:00";p.setConnectionInitSqls(java.util.List.of("SET time_zone = '"+zone+"'"));}
-  p.setInitialSize(0);p.setMaxTotal(16);p.setMaxIdle(8);p.setMaxWaitMillis(10000);p.setValidationQuery("SELECT 1");p.setTestOnBorrow(true);pool=p;
+  p.setInitialSize(0);int max=Integer.parseInt(value("DB_POOL_SIZE","16"));if(max<1||max>100)throw new IllegalArgumentException("DB_POOL_SIZE must be 1–100");p.setMaxTotal(max);p.setMaxIdle(Math.min(8,max));p.setMaxWaitMillis(10000);p.setValidationQuery("SELECT 1");p.setTestOnBorrow(true);pool=p;
  }
  public static String value(String key,String fallback){return System.getProperty(key,System.getenv().getOrDefault(key,fallback));}
  public static Connection getConnection() throws SQLException {initialize();return pool.getConnection();}

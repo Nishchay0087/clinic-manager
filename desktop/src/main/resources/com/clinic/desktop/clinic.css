@@ -1,0 +1,27 @@
+.root { -fx-font-family: 'System'; -fx-font-size: 13px; -fx-background-color: #f4f7f8; -fx-text-fill: #173747; }
+.label { -fx-text-fill: #173747; }
+.title { -fx-font-size: 27px; -fx-font-weight: bold; }
+.subtitle { -fx-text-fill: #647a86; -fx-font-size: 13px; }
+.brand { -fx-font-size: 23px; -fx-font-weight: bold; -fx-text-fill: #087e7b; }
+.sidebar { -fx-background-color: #ffffff; -fx-border-color: transparent #e0e8ec transparent transparent; -fx-padding: 28 18; -fx-spacing: 10; }
+.sidebar .button { -fx-alignment: center-left; -fx-background-color: transparent; -fx-padding: 12 16; }
+.sidebar .button:hover { -fx-background-color: #e5f3ef; }
+.button { -fx-background-color: #ffffff; -fx-text-fill: #173747; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d9e4e8; -fx-padding: 9 15; -fx-cursor: hand; }
+.button:hover { -fx-background-color: #e5f3ef; }
+.button.primary { -fx-background-color: #087e7b; -fx-text-fill: white; -fx-border-color: #087e7b; -fx-font-weight: bold; }
+.button.danger { -fx-text-fill: #b33b43; }
+.text-field, .text-area, .combo-box, .date-picker { -fx-background-color: white; -fx-border-color: #d9e4e8; -fx-border-radius: 7; -fx-background-radius: 7; -fx-padding: 6; }
+.text-area .content { -fx-background-color: white; }
+.table-view { -fx-background-color: white; -fx-border-color: #dfe8eb; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 6; }
+.table-view .column-header, .table-view .filler { -fx-background-color: #edf4f4; -fx-size: 40; }
+.table-row-cell { -fx-cell-size: 43; -fx-background-color: white; }
+.table-row-cell:odd { -fx-background-color: #f7fafb; }
+.table-row-cell:selected { -fx-background-color: #d2ebe6; }
+.table-row-cell:selected .text { -fx-fill: #173747; }
+.card { -fx-padding: 20; -fx-background-color: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #e0e8ec; }
+.metric { -fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #087e7b; }
+.notice { -fx-background-color: #fff4df; -fx-padding: 14; -fx-background-radius: 8; -fx-text-fill: #715527; }
+.statusbar { -fx-padding: 10 22; -fx-background-color: #e8f1f1; }
+.scroll-pane, .scroll-pane > .viewport { -fx-background-color: transparent; }
+.dialog-pane { -fx-background-color: #f4f7f8; }
+.separator .line { -fx-border-color: #e0e8ec; }

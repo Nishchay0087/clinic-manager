@@ -13,6 +13,7 @@ import java.util.*;
 public class DocumentService {
     private static final Set<String> CATEGORIES = Set.of("LAB_REPORT","PRESCRIPTION","MEDICAL_HISTORY","REFERRAL","OTHER");
     private final Path storage;
+    private final boolean databaseStorage=Database.value("DOCUMENT_STORAGE_MODE","filesystem").equals("mysql");
     private final com.clinic.dao.IMedicalDocumentDAO dao=new com.clinic.dao.impl.JdbcMedicalDocumentDAO();
     public DocumentService() {
         String configured = System.getenv("DOCUMENT_STORAGE_DIR");
@@ -54,15 +55,25 @@ public class DocumentService {
             long patient=resolvePatient(c,userId,role,patientId);authorize(c,userId,role,patient,false);
             byte[] bytes;try(InputStream input=file.getInputStream()){bytes=input.readNBytes(PdfValidator.MAX_BYTES+1);}
             var pdf=PdfValidator.validate(file.getSubmittedFileName(),file.getContentType(),bytes);
-            Files.createDirectories(storage);String name=UUID.randomUUID()+".pdf";saved=storage.resolve(name);Files.write(saved,bytes,StandardOpenOption.CREATE_NEW);
+            String name=UUID.randomUUID()+".pdf";
+            if(!databaseStorage){Files.createDirectories(storage);saved=storage.resolve(name);Files.write(saved,bytes,StandardOpenOption.CREATE_NEW);}
+            c.setAutoCommit(false);try{
             try(PreparedStatement s=c.prepareStatement("INSERT INTO medical_documents(patient_id,uploaded_by,title,description,document_type,original_filename,storage_filename,mime_type,file_size,sha256_hash,extracted_text) VALUES(?,?,?,?,?,?,?,'application/pdf',?,?,?)",Statement.RETURN_GENERATED_KEYS)){
-                s.setLong(1,patient);s.setLong(2,userId);s.setString(3,title==null||title.isBlank()?file.getSubmittedFileName().substring(0,Math.min(200,file.getSubmittedFileName().length())):title.trim());s.setString(4,description);s.setString(5,category);s.setString(6,file.getSubmittedFileName());s.setString(7,name);s.setLong(8,bytes.length);s.setString(9,pdf.sha256());s.setString(10,pdf.text());s.executeUpdate();try(ResultSet r=s.getGeneratedKeys()){r.next();return Map.of("documentId",r.getLong(1),"ocrNeeded",pdf.text().isBlank(),"message",pdf.text().isBlank()?"Uploaded. This scanned PDF needs OCR for text search; OCR is not enabled.":"Document uploaded and text indexed.");}
+                s.setLong(1,patient);s.setLong(2,userId);s.setString(3,title==null||title.isBlank()?file.getSubmittedFileName().substring(0,Math.min(200,file.getSubmittedFileName().length())):title.trim());s.setString(4,description);s.setString(5,category);s.setString(6,file.getSubmittedFileName());s.setString(7,name);s.setLong(8,bytes.length);s.setString(9,pdf.sha256());s.setString(10,pdf.text());s.executeUpdate();try(ResultSet r=s.getGeneratedKeys()){r.next();long documentId=r.getLong(1);
+                    if(databaseStorage)try(var content=c.prepareStatement("INSERT INTO document_content(document_id,content) VALUES(?,?)")){content.setLong(1,documentId);content.setBytes(2,bytes);content.executeUpdate();}
+                    c.commit();return Map.of("documentId",documentId,"ocrNeeded",pdf.text().isBlank(),"message",pdf.text().isBlank()?"Uploaded. This scanned PDF needs OCR for text search; OCR is not enabled.":"Document uploaded and text indexed.");}
             }
+            }catch(Exception e){c.rollback();throw e;}
         }catch(Exception e){if(saved!=null)try{Files.deleteIfExists(saved);}catch(IOException ignored){}if(e instanceof AppException a)throw a;throw new AppException(500,"Could not save this document.");}
     }
     public void stream(long userId,String role,long id,boolean download,HttpServletResponse response) {
         try(Connection c=Database.getConnection();PreparedStatement s=c.prepareStatement("SELECT patient_id,storage_filename,file_size FROM medical_documents WHERE document_id=? AND archived=FALSE")){
-            s.setLong(1,id);try(ResultSet r=s.executeQuery()){if(!r.next())throw new AppException(404,"Document not found.");authorize(c,userId,role,r.getLong(1),false);String name=r.getString(2);if(!name.matches("[a-f0-9\\-]{36}\\.pdf"))throw new AppException(500,"Document storage is invalid.");Path path=storage.resolve(name).normalize();if(!path.startsWith(storage)||!Files.isRegularFile(path,LinkOption.NOFOLLOW_LINKS))throw new AppException(404,"Document file is unavailable.");response.setContentType("application/pdf");response.setHeader("Cache-Control","private, no-store");response.setHeader("X-Content-Type-Options","nosniff");response.setHeader("Content-Disposition",(download?"attachment":"inline")+"; filename=\"document-"+id+".pdf\"");response.setContentLengthLong(Files.size(path));Files.copy(path,response.getOutputStream());}
+            s.setLong(1,id);try(ResultSet r=s.executeQuery()){if(!r.next())throw new AppException(404,"Document not found.");authorize(c,userId,role,r.getLong(1),false);if(databaseStorage){
+                try(var blob=c.prepareStatement("SELECT content FROM document_content WHERE document_id=?")){blob.setLong(1,id);try(var data=blob.executeQuery()){
+                    if(!data.next())throw new AppException(404,"Document content is not in MySQL. Migrate existing files before switching storage mode.");
+                    response.setContentType("application/pdf");response.setHeader("Cache-Control","private, no-store");response.setHeader("Content-Disposition",(download?"attachment":"inline")+"; filename=\"document-"+id+".pdf\"");response.setContentLengthLong(r.getLong(3));try(var input=data.getBinaryStream(1)){input.transferTo(response.getOutputStream());}return;
+                }}
+            }String name=r.getString(2);if(!name.matches("[a-f0-9\\-]{36}\\.pdf"))throw new AppException(500,"Document storage is invalid.");Path path=storage.resolve(name).normalize();if(!path.startsWith(storage)||!Files.isRegularFile(path,LinkOption.NOFOLLOW_LINKS))throw new AppException(404,"Document file is unavailable.");response.setContentType("application/pdf");response.setHeader("Cache-Control","private, no-store");response.setHeader("X-Content-Type-Options","nosniff");response.setHeader("Content-Disposition",(download?"attachment":"inline")+"; filename=\"document-"+id+".pdf\"");response.setContentLengthLong(Files.size(path));Files.copy(path,response.getOutputStream());}
         }catch(SQLException|IOException e){throw new AppException(500,"Could not retrieve the document.");}
     }
     public void archive(long userId,String role,long id){

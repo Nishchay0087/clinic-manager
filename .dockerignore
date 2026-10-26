@@ -1,0 +1,9 @@
+.git
+.tools
+.env
+.env.*
+target
+desktop
+private-medical-documents
+docs/screenshots
+**/*.log

@@ -10,3 +10,6 @@ __pycache__/
 *.pyc
 .idea/
 .vscode/
+.vercel/
+*.jfr
+deploy/*.env

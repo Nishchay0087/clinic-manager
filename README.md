@@ -1,4 +1,20 @@
-# E-Healthcare Clinic Manager
+# E-Healthcare Clinic Manager — JavaFX + JDBC + MySQL
+
+The primary frontend is the native JavaFX application in `desktop/`. It connects to the Java Servlet backend, which uses JDBC/MySQL Connector/J to store live records in a shared MySQL database. No WebView is used. The previous browser interface is retained for compatibility.
+
+**Start here:** [JavaFX and production deployment guide](docs/JAVAFX-DEPLOYMENT.md).
+
+- First run on this prepared Mac: `./scripts/start-clinic.sh` (choose your administrator; leave the backend running).
+- Launch desktop: `./scripts/run-desktop.sh` (Windows: `scripts/run-desktop.ps1`).
+- New production database: build the backend, configure the schema-owner DB environment, then run `./scripts/setup-production.sh`. No demo patient/doctor/appointment data is inserted.
+- Backend hosting: `Dockerfile` / `Dockerfile.vercel`, with an external persistent MySQL service. Each desktop client uses the same backend URL.
+- Package desktop per operating system: `mvn -f desktop/pom.xml clean javafx:jlink`.
+- Vercel hosts the backend; users download/run JavaFX locally. A website link cannot execute a native JavaFX frontend.
+
+---
+
+## Legacy web demo and original project details
+
 
 A Java Servlet/JSP clinic application with patient, doctor, and administrator portals. Uses JDBC and MySQL for persistent records, BCrypt sessions, private PDF storage, a persisted Java PriorityQueue, and scheduled reminders.
 
